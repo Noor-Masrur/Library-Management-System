@@ -6,14 +6,13 @@ import com.tigerit.LMS.error.BookAlreadyPresent;
 import com.tigerit.LMS.error.BookNotFound;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookManagerImplDB implements BookManager {
+public class BookManagerImplDb implements BookManager {
 
     private static final String CONNECTION_URL =
-            "dbc:mysql://localhost:3306/mylibrary";
+            "jdbc:mysql://localhost:3306/mylibrary";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "!tigerit36";
 
@@ -22,8 +21,8 @@ public class BookManagerImplDB implements BookManager {
         Long bookId = resultSet.getLong("book_id");
         String title = resultSet.getString("title");
         String author = resultSet.getString("author");
-        LocalDate publicationDate = resultSet.getObject("publication_date", LocalDate.class);
-        Genre genre = Genre.valueOf(resultSet.getString("genre")); // Assuming genre is stored as a string in the database
+        Date publicationDate = resultSet.getObject("publication_date", Date.class);
+        Genre genre = Genre.valueOf(resultSet.getString("genre"));
         int numberOfCopies = resultSet.getInt("number_of_copies");
 
         return new Book(title, author, bookId, publicationDate, genre, numberOfCopies);
@@ -32,15 +31,19 @@ public class BookManagerImplDB implements BookManager {
 
     @Override
     public void addBook(Book book) {
-        try (Connection conn = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
-            String sql = "INSERT INTO books (book_id, title, author, number_of_copies) VALUES (?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, book.getBookId());
-            stmt.setString(2, book.getTitle());
-            stmt.setString(3, book.getAuthor());
-            stmt.setInt(4, book.getNumberOfCopies());
+        try (Connection connection = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
+            String sql = "INSERT INTO books ( book_id, title, author, publication_date, genre, number_of_copies) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setLong(1, book.getBookId());
+            statement.setString(2, book.getTitle());
+            statement.setString(3, book.getAuthor());
+            statement.setDate(4, book.getPublicationDate());
+            statement.setString(5,  book.getGenre().toString());
+            statement.setInt(6, book.getNumberOfCopies());
 
-            int rowsAffected = stmt.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+
             if (rowsAffected == 0) {
                 throw new BookAlreadyPresent("Book no: " + book.getBookId() + " already exists");
             }
@@ -54,10 +57,10 @@ public class BookManagerImplDB implements BookManager {
         try (Connection connection = DriverManager
                 .getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             String sql = "SELECT * FROM books WHERE book_id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, bookId);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setLong(1, bookId);
+            ResultSet rs = statement.executeQuery();
 
-            ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
                 return createBookFromResultSet(rs);
             } else {
@@ -70,18 +73,25 @@ public class BookManagerImplDB implements BookManager {
 
     @Override
     public void updateBook(Book updatedBook) {
-        try (Connection conn = DriverManager
+        try (Connection connection = DriverManager
                 .getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             String sql =
-                    "UPDATE books SET title = ?, author = ?, number_of_copies = ?" +
+                    "UPDATE books SET " +
+                            "title = ?, " +
+                            "author = ?," +
+                            "publication_date = ?, " +
+                            "genre = ?, " +
+                            "number_of_copies = ?" +
                             " WHERE book_id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, updatedBook.getTitle());
-            stmt.setString(2, updatedBook.getAuthor());
-            stmt.setInt(3, updatedBook.getNumberOfCopies());
-            stmt.setLong(4, updatedBook.getBookId());
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, updatedBook.getTitle());
+            statement.setString(2, updatedBook.getAuthor());
+            statement.setDate(3, updatedBook.getPublicationDate());
+            statement.setString(4,  updatedBook.getGenre().toString());
+            statement.setInt(5, updatedBook.getNumberOfCopies());
+            statement.setLong(6, updatedBook.getBookId());
+            int rowsAffected = statement.executeUpdate();
 
-            int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
                 throw new BookNotFound("Book no: " + updatedBook.getBookId() + " not found");
             }
@@ -92,13 +102,13 @@ public class BookManagerImplDB implements BookManager {
 
     @Override
     public void deleteBook(Long bookId) {
-        try (Connection conn = DriverManager
+        try (Connection connection = DriverManager
                 .getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             String sql = "DELETE FROM books WHERE book_id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, bookId);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setLong(1, bookId);
+            int rowsAffected = statement.executeUpdate();
 
-            int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
                 throw new BookNotFound("Book no: " + bookId + " not found");
             }
@@ -109,7 +119,23 @@ public class BookManagerImplDB implements BookManager {
 
     @Override
     public List<Book> searchBookByTitle(String Keyword) {
-        return null;
+        try (Connection connection = DriverManager
+                .getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM books WHERE LOWER(title) LIKE ?");
+            statement.setString(1, "%" + Keyword.toLowerCase() + "%");
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Book> books = new ArrayList<>();
+
+            while (resultSet.next()) {
+                Book book = createBookFromResultSet(resultSet);  // Assuming you have a Book constructor that takes values from ResultSet
+                books.add(book);
+            }
+
+            return books;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error searching books", e);
+        }
     }
 
     @Override
@@ -139,7 +165,22 @@ public class BookManagerImplDB implements BookManager {
 
     @Override
     public List<Book> getAllAvailableBooks() {
-        return null;
+        try (Connection connection = DriverManager
+                .getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM books");
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Book> books = new ArrayList<>();
+
+            while (resultSet.next()) {
+                Book book = createBookFromResultSet(resultSet);  // Assuming you have a Book constructor that takes values from ResultSet
+                books.add(book);
+            }
+
+            return books;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error searching books", e);
+        }
     }
 
 }

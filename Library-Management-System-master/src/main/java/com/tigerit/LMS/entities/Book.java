@@ -1,18 +1,19 @@
 package com.tigerit.LMS.entities;
 
-import java.time.LocalDate;
+
+import java.sql.Date;
 
 public class Book {
     private String title;
     private String author;
     private Long bookId;
-    private LocalDate publicationDate;
+    private Date publicationDate;
     private Genre genre;
     private Integer numberOfCopies;
 
     public Book(String title,
                 String author,
-                Long bookId, LocalDate publicationDate, Genre genre,
+                Long bookId, Date publicationDate, Genre genre,
                 Integer numberOfCopies) {
         this.title = title;
         this.author = author;
@@ -41,17 +42,6 @@ public class Book {
         this.genre = genre;
     }
 
-    @Override
-    public String toString() {
-        return "Book{" +
-                "title='" + title + '\'' +
-                ", author='" + author + '\'' +
-                ", bookId=" + bookId +
-                ", publicationDate=" + publicationDate +
-                ", genre=" + genre +
-                ", numberOfCopies=" + numberOfCopies +
-                '}';
-    }
 
     public String getTitle() {
         return title;
@@ -77,11 +67,11 @@ public class Book {
         this.bookId = bookId;
     }
 
-    public LocalDate getPublicationDate() {
+    public Date getPublicationDate() {
         return publicationDate;
     }
 
-    public void setPublicationDate(LocalDate publicationDate) {
+    public void setPublicationDate(Date publicationDate) {
         this.publicationDate = publicationDate;
     }
 
@@ -91,5 +81,18 @@ public class Book {
 
     public void setNumberOfCopies(Integer numberOfCopies) {
         this.numberOfCopies = numberOfCopies;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", bookId=" + bookId +
+                ", publicationDate=" + publicationDate +
+                ", genre=" + genre +
+                ", numberOfCopies=" + numberOfCopies +
+                '}';
     }
 }

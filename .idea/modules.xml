@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Library-Management-System-master.iml" filepath="$PROJECT_DIR$/.idea/Library-Management-System-master.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/noor-java-first.main.iml" filepath="$PROJECT_DIR$/.idea/modules/noor-java-first.main.iml" />
     </modules>
   </component>
 </project>

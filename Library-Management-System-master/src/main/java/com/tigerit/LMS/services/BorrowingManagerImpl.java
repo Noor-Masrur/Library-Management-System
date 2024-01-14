@@ -4,6 +4,7 @@ import com.tigerit.LMS.entities.Book;
 import com.tigerit.LMS.entities.Borrowing;
 import com.tigerit.LMS.error.BorrowingNotFound;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class BorrowingManagerImpl implements BorrowingManager{
     }
 
     @Override
-    public void issueBook(Book book, LocalDate issueDate, LocalDate dueDate) {
+    public void issueBook(Book book, Date issueDate, Date dueDate) {
         if (book.getNumberOfCopies() > 0) {
             Borrowing borrowing = new Borrowing(
                     book.getBookId(), countId++,  issueDate , dueDate
@@ -39,13 +40,12 @@ public class BorrowingManagerImpl implements BorrowingManager{
     @Override
     public double calculateFine(Borrowing borrowing) {
         double fine = 0.0;
-        LocalDate localDate = LocalDate.now();
+        Date dueDate = borrowing.getDueDate();
 
-        if (localDate.isAfter(borrowing.getDueDate())) {
-            int dueDays = Period
-                    .between(borrowing.getDueDate(), localDate)
-                    .getDays();
-            fine = dueDays*2;
+        if (LocalDate.now().isAfter(dueDate.toLocalDate())) {
+            long daysBetween = (LocalDate.now().toEpochDay() - dueDate.toLocalDate().toEpochDay());
+            int dueDays = Math.toIntExact(daysBetween);
+            fine = dueDays * 2.0;
         }
 
         return fine;

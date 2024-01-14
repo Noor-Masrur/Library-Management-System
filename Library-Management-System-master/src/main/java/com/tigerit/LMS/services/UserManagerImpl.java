@@ -6,15 +6,15 @@ import java.sql.*;
 public class UserManagerImpl implements UserManager {
 
     // Database connection details (replace with your actual values)
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/mylibrary";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "!tigerit36";
+    private static final String CONNECTION_URL = "jdbc:mysql://localhost:3306/mylibrary";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "!tigerit36";
 
     @Override
     public void registerMember(Member member) {
         // ... (validation and password hashing)
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection connection = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO members (name, email, contact, registered_date) VALUES (?, ?, ?, ?)"
             );

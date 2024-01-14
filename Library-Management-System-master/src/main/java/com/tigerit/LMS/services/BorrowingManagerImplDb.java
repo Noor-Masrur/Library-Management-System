@@ -6,42 +6,38 @@ import com.tigerit.LMS.error.BorrowingNotFound;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
 
-public class BorrowingManagerImplDB implements BorrowingManager {
+public class BorrowingManagerImplDb implements BorrowingManager {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/mylibrary";
-    private static final String DB_USER = "username";
-    private static final String DB_PASSWORD = "password";
+    private static final String CONNECTION_URL = "jdbc:mysql://localhost:3306/mylibrary";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "!tigerit36";
 
     private BookManager bookManager;
 
     private Borrowing createBorrowingFromResultSet(ResultSet resultSet) throws SQLException {
         Long issueId = resultSet.getLong("issue_id");
         Long bookId = resultSet.getLong("book_id");
-        LocalDate issueDate = resultSet.getDate("issue_date").toLocalDate();
-        LocalDate dueDate = resultSet.getDate("due_date").toLocalDate();
-
-        // Potentially retrieve other fields if present in your database table
+        Date issueDate = resultSet.getDate("issue_date");
+        Date dueDate = resultSet.getDate("due_date");
 
         return new Borrowing(issueId, bookId, issueDate, dueDate);
     }
 
-    public BorrowingManagerImplDB(BookManager bookManager) {
+    public BorrowingManagerImplDb(BookManager bookManager) {
         this.bookManager = bookManager;
     }
 
     @Override
-    public void issueBook(Book book, LocalDate issueDate, LocalDate dueDate) {
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+    public void issueBook(Book book, Date issueDate, Date dueDate) {
+        try (Connection connection = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             try (PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO borrowings (book_id, issue_date, due_date) VALUES (?, ?, ?)"
             )) {
                 statement.setLong(1, book.getBookId());
-                statement.setDate(2, Date.valueOf(issueDate));
-                statement.setDate(3, Date.valueOf(dueDate));
+                statement.setDate(2, issueDate);
+                statement.setDate(3, dueDate);
 
                 int affectedRows = statement.executeUpdate();
                 if (affectedRows == 1) {
@@ -60,13 +56,22 @@ public class BorrowingManagerImplDB implements BorrowingManager {
 
     @Override
     public double calculateFine(Borrowing borrowing) {
-        // Calculation logic remains the same as in-memory implementation
-        return 0.0; // Replace with actual fine calculation
+        double fine = 0.0;
+        Date dueDate = borrowing.getDueDate();
+
+        if (LocalDate.now().isAfter(dueDate.toLocalDate())) {
+            long daysBetween = (LocalDate.now().toEpochDay() - dueDate.toLocalDate().toEpochDay());
+            int dueDays = Math.toIntExact(daysBetween);
+            fine = dueDays * 2.0;
+        }
+
+        return fine;
     }
+
 
     @Override
     public void returnBook(Long issueId) {
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection connection = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT * FROM borrowings WHERE issue_id = ?"
             )) {
@@ -75,10 +80,9 @@ public class BorrowingManagerImplDB implements BorrowingManager {
                 if (resultSet.next()) {
                     Borrowing borrowing = createBorrowingFromResultSet(resultSet);
                     double fine = calculateFine(borrowing);
-
+                    System.out.println(borrowing);
                     try (PreparedStatement updateStatement = connection.prepareStatement(
-                            "DELETE FROM borrowings WHERE issue_id = ?"
-                    )) {
+                            "DELETE FROM borrowings WHERE issue_id = ?")) {
                         updateStatement.setLong(1, issueId);
                         int affectedRows = updateStatement.executeUpdate();
                         if (affectedRows == 1) {

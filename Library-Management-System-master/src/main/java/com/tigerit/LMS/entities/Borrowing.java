@@ -1,12 +1,14 @@
 package com.tigerit.LMS.entities;
 
-import java.time.LocalDate;
+import java.sql.Date;
+import java.util.Calendar;
+
 
 public class Borrowing {
     private Long issuedBookId;
     private Long issueId;
-    private LocalDate issueDate;
-    private LocalDate dueDate;
+    private Date issueDate;
+    private Date dueDate;
 
     public Long getIssuedBookId() {
         return issuedBookId;
@@ -24,31 +26,38 @@ public class Borrowing {
         this.issueId = issueId;
     }
 
-    public LocalDate getIssueDate() {
+    public Date getIssueDate() {
         return issueDate;
     }
 
-    public void setIssueDate(LocalDate issueDate) {
+    public void setIssueDate(Date issueDate) {
         this.issueDate = issueDate;
     }
 
-    public LocalDate getDueDate() {
+    public Date getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDate dueDate) {
+    public void setDueDate(Date dueDate) {
         this.dueDate = dueDate;
     }
 
-    public Borrowing(Long issuedBookId, Long issueId, LocalDate issueDate) {
-        long monthsToAdd = 6;
+    public Borrowing(Long issueId,Long issuedBookId, Date issueDate) {
+
         this.issuedBookId = issuedBookId;
         this.issueId = issueId;
         this.issueDate = issueDate;
-        this.dueDate = issueDate.plusMonths(monthsToAdd);
+
+
+        int monthsToAdd = 6;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(issueDate);
+        // Add 6 months
+        calendar.add(Calendar.MONTH, monthsToAdd);
+        this.dueDate = new Date(calendar.getTimeInMillis());
     }
 
-    public Borrowing(Long issuedBookId, Long issueId, LocalDate issueDate, LocalDate dueDate) {
+    public Borrowing( Long issueId, Long issuedBookId, Date issueDate, Date dueDate) {
         this.issuedBookId = issuedBookId;
         this.issueId = issueId;
         this.issueDate = issueDate;
