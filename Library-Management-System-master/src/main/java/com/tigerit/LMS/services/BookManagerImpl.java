@@ -31,6 +31,14 @@ public class BookManagerImpl implements BookManager{
             books.add(book);
     }
 
+    public List<Book> getBooks(){
+        return books;
+    }
+
+    public void clearBooks(){
+        books.clear();
+    }
+
     @Override
     public Book getBookById(Long bookId) {
         return books.stream()
@@ -43,23 +51,13 @@ public class BookManagerImpl implements BookManager{
     @Override
     public void updateBook(Book updatedBook) {
         int index = books.indexOf(getBookById(updatedBook.getBookId()));
+        books.set(index, updatedBook);
 
-        if (index!=-1) {
-            books.set(index,updatedBook);
-        } else {
-            throw new BookNotFound("Book no: "
-                    + updatedBook.getBookId()
-                    +" not found");
-        }
     }
 
     @Override
     public void deleteBook(Long bookId) {
-        if (!books.remove(getBookById(bookId))) {
-            throw new BookNotFound("Book no: "
-                    + bookId
-                    +" not found");
-        }
+        books.remove(getBookById(bookId));
     }
 
     @Override
