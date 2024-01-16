@@ -4,6 +4,7 @@ import com.tigerit.LMS.entities.Book;
 import com.tigerit.LMS.entities.Genre;
 import com.tigerit.LMS.error.BookAlreadyPresent;
 import com.tigerit.LMS.error.BookNotFound;
+import com.tigerit.LMS.services.BookManager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,7 +17,14 @@ public class BookManagerImplDb implements BookManager {
     private static final String USERNAME = "root";
     private static final String PASSWORD = "!tigerit36";
 
+    public BookManagerImplDb() {
 
+    }
+
+    public Connection connect(String url, String name, String pass) throws SQLException {
+        Connection connection = DriverManager.getConnection(url, name, pass);
+        return connection;
+    }
     public Book createBookFromResultSet(ResultSet resultSet) throws SQLException {
         Long bookId = resultSet.getLong("book_id");
         String title = resultSet.getString("title");
@@ -28,10 +36,9 @@ public class BookManagerImplDb implements BookManager {
         return new Book(title, author, bookId, publicationDate, genre, numberOfCopies);
     }
 
-
     @Override
     public void addBook(Book book) {
-        try (Connection connection = DriverManager.getConnection(CONNECTION_URL, USERNAME, PASSWORD)) {
+        try (Connection connection = connect(CONNECTION_URL, USERNAME, PASSWORD)) {
             String sql = "INSERT INTO books ( book_id, title, author, publication_date, genre, number_of_copies) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql);

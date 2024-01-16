@@ -3,12 +3,13 @@ package com.tigerit.LMS.services;
 import com.tigerit.LMS.entities.Book;
 import com.tigerit.LMS.error.BookAlreadyPresent;
 import com.tigerit.LMS.error.BookNotFound;
+import com.tigerit.LMS.services.BookManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BookManagerImpl implements BookManager{
+public class BookManagerImpl implements BookManager {
 
     private List<Book> books;
 

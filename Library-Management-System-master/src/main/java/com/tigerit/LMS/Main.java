@@ -2,9 +2,6 @@ package com.tigerit.LMS;
 
 import com.tigerit.LMS.entities.Book;
 import com.tigerit.LMS.entities.Genre;
-import com.tigerit.LMS.entities.Member;
-import com.tigerit.LMS.error.BookAlreadyPresent;
-import com.tigerit.LMS.error.BookNotFound;
 import com.tigerit.LMS.error.BorrowingNotFound;
 import com.tigerit.LMS.services.*;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.Calendar;
 
 public class Main {
