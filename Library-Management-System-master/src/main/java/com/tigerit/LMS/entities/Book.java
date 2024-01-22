@@ -13,7 +13,9 @@ public class Book {
 
     public Book(String title,
                 String author,
-                Long bookId, Date publicationDate, Genre genre,
+                Long bookId,
+                Date publicationDate,
+                Genre genre,
                 Integer numberOfCopies) {
         this.title = title;
         this.author = author;
@@ -22,10 +24,6 @@ public class Book {
         this.genre = genre;
         this.numberOfCopies = numberOfCopies;
     }
-
-
-
-
 
     public Book() {
     }

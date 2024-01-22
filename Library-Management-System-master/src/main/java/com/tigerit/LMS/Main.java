@@ -1,7 +1,11 @@
 package com.tigerit.LMS;
 
+import com.tigerit.LMS.decorators.CouponBasedDiscount;
+import com.tigerit.LMS.decorators.FlatDiscount;
 import com.tigerit.LMS.entities.Book;
+import com.tigerit.LMS.entities.BuyingPrice;
 import com.tigerit.LMS.entities.Genre;
+import com.tigerit.LMS.entities.Price;
 import com.tigerit.LMS.error.BorrowingNotFound;
 import com.tigerit.LMS.services.*;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +19,20 @@ import java.util.Calendar;
 public class Main {
     private static Logger logger = LogManager.getLogger(Main.class);
     public static void main(String[] args) throws IOException {
+
+        Price firstPrice = new BuyingPrice(100);
+        Price secondPrice = new BuyingPrice(100);
+        Price thirdPrice = new BuyingPrice(100);
+
+        Price flatSecondPrice = new FlatDiscount(secondPrice);
+
+        Price couponSecondPrice = new CouponBasedDiscount(flatSecondPrice, "NEWYEAR2024");
+        Price couponThirdPrice = new CouponBasedDiscount(thirdPrice, "NEWYEAR2024");
+
+        System.out.println(couponSecondPrice.getPrice());
+        System.out.println(couponThirdPrice.getPrice());
+
+
 
 
         //System.out.println("Hello world!");
